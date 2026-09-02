@@ -1,0 +1,20 @@
+// Deploys the pgbook.dev content API (see worker.js).
+//
+//   cd deploy/cloudflare && npx wrangler deploy
+//
+// The landing page at pgbook.dev/ is a separate worker bound to the
+// domain; this one only claims the API paths via more-specific routes.
+{
+  "name": "pgbook",
+  "main": "worker.js",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "../../site",
+    "binding": "ASSETS"
+  },
+  "routes": [
+    { "pattern": "pgbook.dev/api/*", "zone_name": "pgbook.dev" },
+    { "pattern": "pgbook.dev/install.sh", "zone_name": "pgbook.dev" },
+    { "pattern": "pgbook.dev/downloads/*", "zone_name": "pgbook.dev" }
+  ]
+}
