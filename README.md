@@ -10,6 +10,24 @@ $ pgbook read locks
 
 Free and open source · No signup required
 
+## Install
+
+```bash
+curl -fsSL https://pgbook.dev/install.sh | sh
+```
+
+Or with Homebrew:
+
+```bash
+brew install pgrundev/tap/pgbook
+```
+
+Or grab a binary from the [latest release](https://github.com/pgrundev/pgbook/releases/latest) (macOS and Linux, arm64 and amd64), or build from source:
+
+```bash
+go install github.com/pgrundev/pgbook@latest
+```
+
 ## Table of contents
 
 ### Beginner
@@ -75,19 +93,7 @@ Or just read it at [pgbook.dev](https://pgbook.dev) — no install required.
 
 Topics are fetched from pgbook.dev, so the book updates without a new CLI release, and every topic you open is cached for offline reading. The CLI only displays lessons — it never connects to a database and never executes SQL.
 
-### Install
-
-```bash
-curl -fsSL https://pgbook.dev/install.sh | sh
-```
-
-Or with Homebrew:
-
-```bash
-brew install pgrundev/tap/pgbook
-```
-
-macOS and Linux, arm64 and amd64. A single static binary — no signup, no Node, no Postgres required to read.
+A single static binary — no signup, no Node, no Postgres required to read. See [Install](#install).
 
 ### `pgbook pdf`
 
