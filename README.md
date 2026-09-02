@@ -65,11 +65,67 @@ Postgres docs are exhaustive but hard to start in. pgbook picks the topics that 
 
 ```console
 $ pgbook list
-$ pgbook read transactions
-$ pgbook run transactions --example 1
+$ pgbook read locks
+$ pgbook search indexes
+$ pgbook next
+$ pgbook pdf
 ```
 
 Or just read it at [pgbook.dev](https://pgbook.dev) — no install required.
+
+### `pgbook pdf`
+
+Download the latest complete edition of Postgres Book as a PDF:
+
+```bash
+pgbook pdf
+```
+
+Expected output:
+
+```text
+Downloading Postgres Book…
+
+✓ Saved to ./postgres-book.pdf
+  8 topics · 64 pages · version 0.1
+```
+
+Supports a custom destination:
+
+```bash
+pgbook pdf --output ~/Downloads/postgres-book.pdf
+pgbook pdf -o postgres.pdf
+```
+
+Behavior:
+
+- Downloads the latest PDF from pgbook.dev.
+- Saves it as `postgres-book.pdf` in the current directory by default.
+- Shows download progress, edition version, topic count, page count, and final path.
+- Never silently overwrites an existing file — asks for confirmation, or requires `--force`.
+- Downloads to a temporary file and renames it only after the download succeeds.
+- Validates the HTTP response, content type, file size, and published checksum.
+- Removes partial temporary files after failures.
+- Returns a non-zero exit code with a useful error message when the download fails.
+
+The PDF is generated from the same source files used by the website, so the website, CLI lessons, and downloadable book always contain the same content.
+
+## API
+
+### `GET /api/book`
+
+Public endpoint returning metadata about the current edition and its download URL:
+
+```json
+{
+  "version": "0.1",
+  "topics": 8,
+  "pages": 64,
+  "filename": "postgres-book.pdf",
+  "download_url": "https://pgbook.dev/downloads/postgres-book.pdf",
+  "sha256": "..."
+}
+```
 
 ---
 
