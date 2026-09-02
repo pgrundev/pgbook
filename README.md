@@ -19,20 +19,20 @@ Free and open source · No signup required
 | 01 | Tables and data types | _in progress_ |
 | 02 | SELECT, INSERT, UPDATE, DELETE | _in progress_ |
 | 03 | Joins | _in progress_ |
-| 04 | **Index basics** — why some queries are instant | ✅ |
-| 05 | **Transactions** — grouping statements safely | ✅ |
+| 04 | **Index basics** — why some queries are instant | _in progress_ |
+| 05 | **Transactions** — grouping statements safely | _in progress_ |
 | 06 | Reading EXPLAIN | _in progress_ |
 
 ### Intermediate
 
 | # | Topic | |
 |---|-------|---|
-| 07 | **Locks** — why a query is stuck, not slow | ✅ |
-| 08 | **Transactions and isolation** — what one query can see of another | ✅ |
-| 09 | **JSONB** — semi-structured data, indexed | ✅ |
-| 10 | **Window functions** — running totals without collapsing rows | ✅ |
-| 11 | **Row-level security** — access control inside the database | ✅ |
-| 12 | **Vacuum and autovacuum** — why deleted rows still take space | ✅ |
+| 07 | **Locks** — why a query is stuck, not slow | _in progress_ |
+| 08 | **Transactions and isolation** — what one query can see of another | _in progress_ |
+| 09 | **JSONB** — semi-structured data, indexed | _in progress_ |
+| 10 | **Window functions** — running totals without collapsing rows | _in progress_ |
+| 11 | **Row-level security** — access control inside the database | _in progress_ |
+| 12 | **Vacuum and autovacuum** — why deleted rows still take space | _in progress_ |
 | 13 | Connection pooling | _in progress_ |
 | 14 | Finding slow queries | _in progress_ |
 
@@ -49,7 +49,7 @@ Free and open source · No signup required
 | 21 | Partitioning | _in progress_ |
 | 22 | Query-plan optimization | _in progress_ |
 
-Eight topics written so far, more in progress. Every example runs against a real Postgres — copy it straight into your own database.
+All topics are in progress. Every example runs against a real Postgres — copy it straight into your own database.
 
 ## Built to be read, not searched
 
