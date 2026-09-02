@@ -1,0 +1,19 @@
+{
+  "slug": "row-level-security",
+  "title": "Row-level security",
+  "description": "Access control inside the database",
+  "level": "intermediate",
+  "reading_minutes": 10,
+  "order": 5,
+  "aliases": [
+    "rls",
+    "row-security",
+    "policies"
+  ],
+  "tags": [
+    "security",
+    "multi-tenant",
+    "policies"
+  ],
+  "content": "## The database enforces who sees what\n\nRow-level security (RLS) attaches a filter to a table that every query\nmust pass through. Instead of trusting each application query to add\n`WHERE tenant_id = ...`, the database adds it for you — and there is no\nway to forget.\n\n```sql\nCREATE TABLE documents (\n  id        bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,\n  tenant_id int  NOT NULL,\n  title     text NOT NULL\n);\n\nINSERT INTO documents (tenant_id, title) VALUES\n  (1, 'tenant one doc'), (2, 'tenant two doc');\n```\n\n## Turning it on\n\n```sql\nALTER TABLE documents ENABLE ROW LEVEL SECURITY;\n\nCREATE POLICY tenant_isolation ON documents\n  USING (tenant_id = current_setting('app.tenant_id')::int);\n```\n\nWith RLS enabled and no matching policy, a table is empty for\nnon-owners — RLS fails closed.\n\n## Trying it\n\n```sql\nCREATE ROLE app_user LOGIN;\nGRANT SELECT, INSERT, UPDATE, DELETE ON documents TO app_user;\n\nSET ROLE app_user;\nSET app.tenant_id = '1';\nSELECT * FROM documents;   -- only tenant one's rows\n\nSET app.tenant_id = '2';\nSELECT * FROM documents;   -- only tenant two's rows\n```\n\nThe application sets `app.tenant_id` once per connection (or per\ntransaction with `SET LOCAL`), and every query is scoped automatically.\n\n## USING vs WITH CHECK\n\n- `USING (...)` — which existing rows are visible (SELECT, UPDATE,\n  DELETE)\n- `WITH CHECK (...)` — which new row versions are allowed (INSERT,\n  UPDATE)\n\n```sql\nCREATE POLICY tenant_writes ON documents FOR INSERT\n  WITH CHECK (tenant_id = current_setting('app.tenant_id')::int);\n```\n\nWithout `WITH CHECK`, a tenant could insert rows *into another\ntenant's* view of the table while never being able to read them back.\n\n## Who bypasses RLS\n\nSuperusers and roles with `BYPASSRLS` skip policies entirely. Table\nowners do too, unless you force it:\n\n```sql\nALTER TABLE documents FORCE ROW LEVEL SECURITY;\n```\n\n\u003e Note: your migration/admin role bypassing RLS is a feature; your\n\u003e application role must never own the tables it queries.\n\n## The cost\n\nPolicies are just predicates — they are planned like any `WHERE`\nclause, and indexes on the policy columns (`tenant_id` here) apply.\nKeep policies simple and indexed and the overhead is negligible.\n"
+}

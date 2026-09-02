@@ -1,0 +1,20 @@
+{
+  "slug": "replication",
+  "title": "Replication",
+  "description": "Read replicas and failover",
+  "level": "advanced",
+  "reading_minutes": 11,
+  "order": 8,
+  "aliases": [
+    "replicas",
+    "read-replicas",
+    "failover",
+    "standby"
+  ],
+  "tags": [
+    "wal",
+    "high-availability",
+    "streaming"
+  ],
+  "content": "## One log, many copies\n\nEvery change in Postgres is first written to the write-ahead log (WAL).\nReplication is simply shipping that log to another server that replays\nit. The replica is a byte-for-byte copy, seconds (usually milliseconds)\nbehind.\n\n## Setting up a streaming replica\n\nOn the primary, create a replication role and let it connect:\n\n```sql\nCREATE ROLE replicator WITH REPLICATION LOGIN PASSWORD 'secret';\n```\n\n```text\n# pg_hba.conf on the primary\nhost replication replicator 10.0.0.2/32 scram-sha-256\n```\n\nOn the replica machine, clone the primary — this is the whole setup:\n\n```text\npg_basebackup -h primary.internal -U replicator \\\n  -D /var/lib/postgresql/data -R -P\n```\n\nThe `-R` flag writes the connection settings and a `standby.signal`\nfile; start Postgres and it begins streaming.\n\n## Watching replication\n\nOn the primary:\n\n```sql\nSELECT client_addr, state, sent_lsn, replay_lsn,\n       pg_wal_lsn_diff(sent_lsn, replay_lsn) AS replay_lag_bytes\nFROM pg_stat_replication;\n```\n\nOn the replica:\n\n```sql\nSELECT pg_is_in_recovery();                      -- true\nSELECT now() - pg_last_xact_replay_timestamp()   AS replication_lag;\n```\n\n## Using a replica\n\nA streaming replica is read-only. Point reports, analytics, and\nread-heavy endpoints at it. Two caveats:\n\n- **Lag is real.** Read-your-own-writes can fail: a user updates their\n  profile on the primary and reloads the page from a replica that\n  hasn't replayed it yet. Route such reads to the primary.\n- **Long queries vs replay.** A long replica query can conflict with\n  incoming WAL; by default Postgres cancels the query after\n  `max_standby_streaming_delay`. `hot_standby_feedback = on` avoids the\n  cancellations at the price of bloat on the primary.\n\n## Replication slots\n\nA slot makes the primary retain WAL until the replica has consumed it,\nso a replica that falls behind (or reboots) never loses its place:\n\n```sql\nSELECT * FROM pg_create_physical_replication_slot('replica_1');\n```\n\n\u003e Note: a slot for a replica that is *gone* forces the primary to keep\n\u003e WAL forever and will eventually fill the disk. Monitor\n\u003e `pg_replication_slots` for inactive slots and drop them.\n\n## Failover\n\nWhen the primary dies, promote the replica:\n\n```text\npg_ctl promote -D /var/lib/postgresql/data\n```\n\nIt stops recovery and starts accepting writes. The hard parts are\naround the edges: making sure the old primary never comes back as a\nsecond writer (fencing), and repointing clients. Tools like Patroni or\npg_auto_failover automate the dance; managed services hide it entirely.\n\n## Sync vs async\n\nBy default replication is asynchronous — a crash can lose the last few\ntransactions. `synchronous_commit = on` with `synchronous_standby_names`\nmakes the primary wait for the replica's acknowledgment: zero data loss,\nhigher commit latency, and writes stall if the sync replica dies. Most\nsetups run async and accept seconds of exposure.\n"
+}

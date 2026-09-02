@@ -1,0 +1,18 @@
+{
+  "slug": "jsonb",
+  "title": "JSON \u0026 JSONB",
+  "description": "Semi-structured data, indexed",
+  "level": "intermediate",
+  "reading_minutes": 9,
+  "order": 3,
+  "aliases": [
+    "json",
+    "json-jsonb"
+  ],
+  "tags": [
+    "jsonb",
+    "gin",
+    "schema-design"
+  ],
+  "content": "## Two JSON types, one right answer\n\nPostgres has `json` (stores the exact text) and `jsonb` (stores a\nparsed binary form). Use `jsonb` — it supports indexing, containment\nqueries, and ignores insignificant whitespace and duplicate keys.\n\n```sql\nCREATE TABLE events (\n  id      bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,\n  payload jsonb NOT NULL\n);\n\nINSERT INTO events (payload) VALUES\n  ('{\"type\": \"signup\", \"user\": {\"id\": 7, \"plan\": \"pro\"}}'),\n  ('{\"type\": \"login\",  \"user\": {\"id\": 7}}'),\n  ('{\"type\": \"signup\", \"user\": {\"id\": 9, \"plan\": \"free\"}}');\n```\n\n## Reading values\n\n```sql\nSELECT payload-\u003e\u003e'type'                 AS type,     -- text\n       payload-\u003e'user'-\u003e\u003e'plan'         AS plan,     -- nested\n       payload#\u003e\u003e'{user,id}'            AS user_id   -- path form\nFROM events;\n```\n\n`-\u003e` returns `jsonb`, `-\u003e\u003e` returns `text`. Chain `-\u003e` while\nnavigating, use `-\u003e\u003e` for the final value.\n\n## Containment: the jsonb superpower\n\n`@\u003e` asks \"does this document contain this shape?\":\n\n```sql\nSELECT * FROM events\nWHERE payload @\u003e '{\"type\": \"signup\"}';\n\nSELECT * FROM events\nWHERE payload @\u003e '{\"user\": {\"plan\": \"pro\"}}';\n```\n\n## Indexing JSONB with GIN\n\nContainment queries stay sequential scans until you add a GIN index:\n\n```sql\nCREATE INDEX events_payload_idx ON events USING gin (payload);\n\nEXPLAIN ANALYZE SELECT * FROM events\nWHERE payload @\u003e '{\"type\": \"signup\"}';\n```\n\nWith enough rows the plan becomes a `Bitmap Index Scan`. If you only\never query containment, the smaller `jsonb_path_ops` variant is faster:\n\n```sql\nCREATE INDEX events_payload_path_idx ON events\nUSING gin (payload jsonb_path_ops);\n```\n\n## Indexing one field with a B-tree\n\nWhen one key is queried with equality or ranges, an expression index\nbeats GIN:\n\n```sql\nCREATE INDEX events_type_idx ON events ((payload-\u003e\u003e'type'));\n\nSELECT count(*) FROM events WHERE payload-\u003e\u003e'type' = 'login';\n```\n\n## When not to use JSONB\n\nIf every row has the same keys and you filter or join on them, they are\ncolumns. JSONB shines for genuinely variable data: webhook payloads,\nuser-defined attributes, API responses.\n\n\u003e Note: `jsonb` values are stored whole. Updating one key rewrites the\n\u003e entire document (and every index on it) — high-churn counters do not\n\u003e belong inside a big JSONB blob.\n"
+}

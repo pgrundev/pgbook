@@ -1,0 +1,19 @@
+{
+  "slug": "indexes",
+  "title": "Indexes",
+  "description": "Why some queries are instant",
+  "level": "beginner",
+  "reading_minutes": 8,
+  "order": 1,
+  "aliases": [
+    "index",
+    "index-basics",
+    "btree"
+  ],
+  "tags": [
+    "performance",
+    "btree",
+    "explain"
+  ],
+  "content": "## Why some queries are instant\n\nWithout an index, Postgres answers a `WHERE` clause by reading every row\nin the table — a sequential scan. An index is a separate structure that\nmaps column values to row locations, so Postgres can jump straight to\nthe matching rows.\n\n```sql\nCREATE TABLE users (\n  id    bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,\n  email text NOT NULL,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nINSERT INTO users (email)\nSELECT 'user' || n || '@example.com' FROM generate_series(1, 100000) n;\n```\n\n## Seeing the difference\n\n`EXPLAIN ANALYZE` shows how Postgres actually ran a query:\n\n```sql\nEXPLAIN ANALYZE SELECT * FROM users WHERE email = 'user4242@example.com';\n```\n\nYou will see `Seq Scan on users` — every row was checked. Now add an\nindex and run it again:\n\n```sql\nCREATE INDEX users_email_idx ON users (email);\n\nEXPLAIN ANALYZE SELECT * FROM users WHERE email = 'user4242@example.com';\n```\n\nThe plan switches to `Index Scan using users_email_idx`, and the\nexecution time drops from milliseconds to microseconds.\n\n## What a B-tree can do\n\nThe default index type is a B-tree. It keeps values sorted, so it\nserves more than equality:\n\n- `WHERE email = '...'` — exact matches\n- `WHERE created_at \u003e now() - interval '1 day'` — ranges\n- `ORDER BY created_at DESC LIMIT 10` — ordering, without a sort\n- `WHERE email LIKE 'user42%'` — left-anchored prefixes (with the right\n  operator class or collation)\n\nIt cannot help with `LIKE '%@gmail.com'` — the sorted order is useless\nwhen the prefix is unknown.\n\n## Multi-column indexes\n\nColumn order matters. An index on `(a, b)` is sorted by `a` first, then\n`b` — like a phone book sorted by last name, then first name.\n\n```sql\nCREATE INDEX orders_customer_created_idx ON orders (customer_id, created_at);\n```\n\nThis serves `WHERE customer_id = 7` and\n`WHERE customer_id = 7 AND created_at \u003e '2026-01-01'`,\nbut not `WHERE created_at \u003e '2026-01-01'` alone.\n\n## Indexes are not free\n\nEvery index slows down writes: each `INSERT`, `UPDATE`, and `DELETE`\nmust maintain it, and it takes disk space. Find indexes that are never\nread:\n\n```sql\nSELECT indexrelname, idx_scan\nFROM pg_stat_user_indexes\nORDER BY idx_scan ASC;\n```\n\n\u003e Note: an `idx_scan` of 0 on a busy table usually means the index can\n\u003e be dropped — but check replicas and rare reports first.\n"
+}

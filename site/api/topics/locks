@@ -1,0 +1,19 @@
+{
+  "slug": "locks",
+  "title": "Locks",
+  "description": "Why a query is stuck, not slow",
+  "level": "intermediate",
+  "reading_minutes": 10,
+  "order": 7,
+  "aliases": [
+    "locking",
+    "lock",
+    "blocking"
+  ],
+  "tags": [
+    "concurrency",
+    "transactions",
+    "blocking"
+  ],
+  "content": "## What Postgres locks\n\nA query that is \"slow\" every time has a plan problem. A query that is\nusually instant but sometimes hangs has a lock problem. Locks are how\nPostgres stops two transactions from changing the same thing at once —\nreads never block reads, but writes serialize.\n\n## Row locks vs table locks\n\nOrdinary DML takes light table locks plus row locks on the rows it\nchanges:\n\n```sql\nBEGIN;\nUPDATE accounts SET balance = balance - 100 WHERE id = 1;\n-- row 1 is now locked until COMMIT or ROLLBACK\n```\n\nDDL is the dangerous one: `ALTER TABLE` takes an `ACCESS EXCLUSIVE`\nlock that conflicts with *everything*, including `SELECT`.\n\n## SELECT ... FOR UPDATE\n\nLock rows you are about to update, so the read and the write are one\natomic step:\n\n```sql\nBEGIN;\nSELECT * FROM accounts WHERE id = 1 FOR UPDATE;\n-- no other transaction can change or lock this row now\nUPDATE accounts SET balance = balance - 100 WHERE id = 1;\nCOMMIT;\n```\n\n## How blocking happens\n\nOpen two sessions:\n\n```sql\n-- session A\nBEGIN;\nUPDATE accounts SET balance = 0 WHERE id = 1;\n\n-- session B (hangs until A commits or rolls back)\nUPDATE accounts SET balance = 1 WHERE id = 1;\n```\n\nB is not slow — it is waiting. The most common real-world shape: a\ntransaction updates a row, then does something long (an API call, user\ninput) before committing, and every other writer of that row queues up\nbehind it.\n\n## Finding the blocking query\n\n```sql\nSELECT blocked.pid            AS blocked_pid,\n       blocked.query          AS blocked_query,\n       blocking.pid           AS blocking_pid,\n       blocking.query         AS blocking_query,\n       blocking.state         AS blocking_state\nFROM pg_stat_activity blocked\nJOIN pg_stat_activity blocking\n  ON blocking.pid = ANY(pg_blocking_pids(blocked.pid));\n```\n\nA blocker whose state is `idle in transaction` is the smoking gun: it\nholds locks but is running nothing. End it with\n`SELECT pg_terminate_backend(pid)`.\n\n## Deadlocks\n\nIf A waits for B while B waits for A, nobody can ever proceed.\nPostgres detects the cycle after `deadlock_timeout` (1s by default) and\nkills one transaction with error `40P01`. The fix is ordering: make\nevery transaction lock rows in the same order (for example, always by\nascending id).\n\n## Lock timeouts\n\nNever queue forever. Set a ceiling per session, per transaction, or per\nrole:\n\n```sql\nSET lock_timeout = '2s';\n```\n\nMigrations deserve one always — an `ALTER TABLE` waiting for a lock\nalso *blocks everyone behind it* while it waits:\n\n```sql\nSET lock_timeout = '5s';\nALTER TABLE accounts ADD COLUMN note text;  -- fails fast instead of stalling the app\n```\n\n## Safe locking patterns\n\n- Keep transactions short; never hold one across network calls\n- `SET lock_timeout` in migrations, and retry on failure\n- Lock rows in a consistent order to prevent deadlocks\n- Use `SELECT ... FOR UPDATE SKIP LOCKED` for job queues:\n\n```sql\nSELECT id FROM jobs\nWHERE status = 'pending'\nORDER BY id\nFOR UPDATE SKIP LOCKED\nLIMIT 1;\n```\n\nWorkers grab different jobs without ever waiting on each other.\n"
+}

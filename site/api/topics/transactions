@@ -1,0 +1,19 @@
+{
+  "slug": "transactions",
+  "title": "Transactions \u0026 isolation",
+  "description": "What one query can see of another",
+  "level": "intermediate",
+  "reading_minutes": 10,
+  "order": 2,
+  "aliases": [
+    "isolation",
+    "transactions-and-isolation",
+    "transaction"
+  ],
+  "tags": [
+    "concurrency",
+    "mvcc",
+    "isolation"
+  ],
+  "content": "## Grouping statements safely\n\nA transaction makes a group of statements atomic: either all of them\ncommit, or none do.\n\n```sql\nBEGIN;\nUPDATE accounts SET balance = balance - 100 WHERE id = 1;\nUPDATE accounts SET balance = balance + 100 WHERE id = 2;\nCOMMIT;\n```\n\nIf the connection drops between the two updates, Postgres rolls the\nfirst one back. Money never disappears.\n\n## Every statement is a transaction\n\nWithout `BEGIN`, each statement runs in its own tiny transaction that\ncommits immediately. `BEGIN` just stretches that boundary across\nseveral statements.\n\n## What one transaction sees of another\n\nOpen two `psql` sessions and try it:\n\n```sql\n-- session A\nBEGIN;\nUPDATE accounts SET balance = 0 WHERE id = 1;\n\n-- session B\nSELECT balance FROM accounts WHERE id = 1;  -- still the old value\n```\n\nSession B does not see A's uncommitted change. Postgres never shows\ndirty (uncommitted) data, at any isolation level.\n\n## Read Committed — the default\n\nUnder `READ COMMITTED`, every *statement* sees a fresh snapshot: data\ncommitted before the statement began. Two identical `SELECT`s inside\none transaction can return different rows if another transaction\ncommits in between. That surprise is called a non-repeatable read.\n\n## Repeatable Read\n\n```sql\nBEGIN ISOLATION LEVEL REPEATABLE READ;\n```\n\nNow the *transaction* takes one snapshot at its first query and keeps\nit. Reports that read many tables consistently belong here. The cost:\nif you try to update a row that someone else changed after your\nsnapshot, Postgres aborts you with a serialization error — retry the\ntransaction.\n\n## Serializable\n\n```sql\nBEGIN ISOLATION LEVEL SERIALIZABLE;\n```\n\nThe strictest level: Postgres guarantees the outcome equals *some*\nserial order of the transactions, detecting write patterns the lower\nlevels miss. Any serializable transaction can fail with SQLSTATE\n`40001`; your application must be ready to retry.\n\n\u003e Note: retries are not an edge case at higher isolation levels — they\n\u003e are the contract. Wrap the transaction in a retry loop.\n\n## Choosing a level\n\n- `READ COMMITTED` — the default; fine for most OLTP writes\n- `REPEATABLE READ` — multi-statement reads that must be consistent\n- `SERIALIZABLE` — invariants spanning multiple rows or tables\n\nWhatever the level, keep transactions short. A transaction held open\nfor minutes blocks vacuum and can bloat every table it touched.\n"
+}

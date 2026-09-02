@@ -1,0 +1,19 @@
+{
+  "slug": "vacuum",
+  "title": "Vacuum \u0026 autovacuum",
+  "description": "Why deleted rows still take space",
+  "level": "intermediate",
+  "reading_minutes": 10,
+  "order": 6,
+  "aliases": [
+    "autovacuum",
+    "vacuum-autovacuum",
+    "bloat"
+  ],
+  "tags": [
+    "mvcc",
+    "maintenance",
+    "bloat"
+  ],
+  "content": "## DELETE does not delete\n\nWhen you `DELETE` or `UPDATE` a row, Postgres does not reclaim its\nspace. It marks the old version dead and leaves it in place, so\ntransactions that started earlier can still see it (that's MVCC —\nreaders never block writers). An `UPDATE` is really an insert of a new\nversion plus a soft-delete of the old one.\n\nDead versions pile up. `VACUUM` is the process that reclaims them.\n\n## Watching it happen\n\n```sql\nCREATE TABLE counters (id int PRIMARY KEY, n int);\nINSERT INTO counters SELECT g, 0 FROM generate_series(1, 100000) g;\n\nUPDATE counters SET n = n + 1;   -- rewrites every row\n\nSELECT n_dead_tup, n_live_tup, last_autovacuum\nFROM pg_stat_user_tables WHERE relname = 'counters';\n```\n\nAfter the update, `n_dead_tup` is about 100,000 — the whole table\nexists twice on disk until vacuum runs.\n\n## What VACUUM does (and does not)\n\n```sql\nVACUUM counters;\n```\n\n- marks dead space reusable by future inserts and updates\n- updates the visibility map (which speeds up index-only scans)\n- prevents transaction ID wraparound (the reason vacuum can never be\n  disabled entirely)\n\nIt does **not** shrink the file on disk except in the tail-end case.\n`VACUUM FULL` does shrink, but takes an exclusive lock and rewrites the\nwhole table — an outage, not maintenance.\n\n## Autovacuum\n\nPostgres runs vacuum for you when dead tuples pass a threshold —\nroughly 20% of the table by default. For a big table that is a lot of\nbloat before anything happens. High-churn tables deserve tighter\nsettings:\n\n```sql\nALTER TABLE counters SET (\n  autovacuum_vacuum_scale_factor = 0.02,\n  autovacuum_vacuum_cost_delay   = 1\n);\n```\n\n## What blocks vacuum\n\nVacuum can only remove versions no transaction can still see. The\nclassic causes of \"vacuum runs but nothing shrinks\":\n\n- a transaction open for hours (`idle in transaction`)\n- an abandoned replication slot\n- a long-running query on a hot-standby with feedback on\n\n```sql\nSELECT pid, state, xact_start, query\nFROM pg_stat_activity\nWHERE state \u003c\u003e 'idle'\nORDER BY xact_start;\n```\n\n\u003e Note: if `n_dead_tup` keeps climbing while autovacuum is running,\n\u003e don't tune vacuum first — find the old transaction or slot pinning\n\u003e the horizon and kill it.\n"
+}

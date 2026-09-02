@@ -1,0 +1,150 @@
+{
+  "version": "0.1",
+  "topics": [
+    {
+      "slug": "indexes",
+      "title": "Indexes",
+      "description": "Why some queries are instant",
+      "level": "beginner",
+      "reading_minutes": 8,
+      "order": 1,
+      "aliases": [
+        "index",
+        "index-basics",
+        "btree"
+      ],
+      "tags": [
+        "performance",
+        "btree",
+        "explain"
+      ]
+    },
+    {
+      "slug": "transactions",
+      "title": "Transactions \u0026 isolation",
+      "description": "What one query can see of another",
+      "level": "intermediate",
+      "reading_minutes": 10,
+      "order": 2,
+      "aliases": [
+        "isolation",
+        "transactions-and-isolation",
+        "transaction"
+      ],
+      "tags": [
+        "concurrency",
+        "mvcc",
+        "isolation"
+      ]
+    },
+    {
+      "slug": "jsonb",
+      "title": "JSON \u0026 JSONB",
+      "description": "Semi-structured data, indexed",
+      "level": "intermediate",
+      "reading_minutes": 9,
+      "order": 3,
+      "aliases": [
+        "json",
+        "json-jsonb"
+      ],
+      "tags": [
+        "jsonb",
+        "gin",
+        "schema-design"
+      ]
+    },
+    {
+      "slug": "window-functions",
+      "title": "Window functions",
+      "description": "Running totals without collapsing rows",
+      "level": "intermediate",
+      "reading_minutes": 9,
+      "order": 4,
+      "aliases": [
+        "windows",
+        "window",
+        "over",
+        "partition-by"
+      ],
+      "tags": [
+        "sql",
+        "analytics",
+        "aggregates"
+      ]
+    },
+    {
+      "slug": "row-level-security",
+      "title": "Row-level security",
+      "description": "Access control inside the database",
+      "level": "intermediate",
+      "reading_minutes": 10,
+      "order": 5,
+      "aliases": [
+        "rls",
+        "row-security",
+        "policies"
+      ],
+      "tags": [
+        "security",
+        "multi-tenant",
+        "policies"
+      ]
+    },
+    {
+      "slug": "vacuum",
+      "title": "Vacuum \u0026 autovacuum",
+      "description": "Why deleted rows still take space",
+      "level": "intermediate",
+      "reading_minutes": 10,
+      "order": 6,
+      "aliases": [
+        "autovacuum",
+        "vacuum-autovacuum",
+        "bloat"
+      ],
+      "tags": [
+        "mvcc",
+        "maintenance",
+        "bloat"
+      ]
+    },
+    {
+      "slug": "locks",
+      "title": "Locks",
+      "description": "Why a query is stuck, not slow",
+      "level": "intermediate",
+      "reading_minutes": 10,
+      "order": 7,
+      "aliases": [
+        "locking",
+        "lock",
+        "blocking"
+      ],
+      "tags": [
+        "concurrency",
+        "transactions",
+        "blocking"
+      ]
+    },
+    {
+      "slug": "replication",
+      "title": "Replication",
+      "description": "Read replicas and failover",
+      "level": "advanced",
+      "reading_minutes": 11,
+      "order": 8,
+      "aliases": [
+        "replicas",
+        "read-replicas",
+        "failover",
+        "standby"
+      ],
+      "tags": [
+        "wal",
+        "high-availability",
+        "streaming"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "slug": "window-functions",
+  "title": "Window functions",
+  "description": "Running totals without collapsing rows",
+  "level": "intermediate",
+  "reading_minutes": 9,
+  "order": 4,
+  "aliases": [
+    "windows",
+    "window",
+    "over",
+    "partition-by"
+  ],
+  "tags": [
+    "sql",
+    "analytics",
+    "aggregates"
+  ],
+  "content": "## Aggregates that keep the rows\n\n`GROUP BY` collapses rows into one row per group. A window function\ncomputes the same kind of aggregate but leaves every row in place:\n\n```sql\nCREATE TABLE payments (\n  id       bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,\n  user_id  int  NOT NULL,\n  amount   numeric NOT NULL,\n  paid_at  date NOT NULL\n);\n\nINSERT INTO payments (user_id, amount, paid_at) VALUES\n  (1, 50, '2026-01-01'), (1, 30, '2026-01-05'), (1, 20, '2026-02-01'),\n  (2, 90, '2026-01-02'), (2, 10, '2026-01-20');\n```\n\n```sql\nSELECT user_id, paid_at, amount,\n       sum(amount) OVER (PARTITION BY user_id ORDER BY paid_at)\n         AS running_total\nFROM payments;\n```\n\nEach row shows its own amount *and* the running total for that user so\nfar. No self-join, no subquery.\n\n## The three parts of OVER\n\n- `PARTITION BY user_id` — restart the calculation per user\n- `ORDER BY paid_at` — the order rows accumulate in\n- frame (optional) — which neighboring rows are visible\n\nLeave `PARTITION BY` out to compute over the whole result; leave\n`ORDER BY` out to aggregate the entire partition on every row.\n\n## Ranking\n\n```sql\nSELECT user_id, amount,\n       row_number() OVER w,\n       rank()       OVER w,\n       dense_rank() OVER w\nFROM payments\nWINDOW w AS (PARTITION BY user_id ORDER BY amount DESC);\n```\n\n`row_number` always counts 1, 2, 3…; `rank` leaves gaps after ties;\n`dense_rank` does not. The `WINDOW` clause names a definition so you\nwrite it once.\n\n## Top-N per group\n\nThe classic use — latest payment per user:\n\n```sql\nSELECT * FROM (\n  SELECT p.*,\n         row_number() OVER (PARTITION BY user_id ORDER BY paid_at DESC) AS rn\n  FROM payments p\n) ranked\nWHERE rn = 1;\n```\n\n## Looking at neighbors\n\n`lag` and `lead` read other rows of the partition:\n\n```sql\nSELECT user_id, paid_at, amount,\n       amount - lag(amount) OVER (PARTITION BY user_id ORDER BY paid_at)\n         AS change_from_previous\nFROM payments;\n```\n\n\u003e Note: window functions run after `WHERE` and `GROUP BY`. To filter on\n\u003e a window result (like `rn = 1` above), wrap it in a subquery or CTE —\n\u003e `WHERE rn = 1` directly is an error.\n"
+}

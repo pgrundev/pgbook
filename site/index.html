@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pgbook — Postgres Book, one topic at a time</title>
+<meta name="description" content="No 1,000-page manual. Pick a Postgres topic, understand how it works, try the examples yourself. Free, open source, readable from the terminal.">
+<style>
+  :root {
+    --bg: #fafaf8; --fg: #1a1a1a; --dim: #6b6b6b; --line: #e2e2de;
+    --accent: #2f6f4f; --code-bg: #f0f0ec;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    font-size: 15px; line-height: 1.65;
+  }
+  main { max-width: 720px; margin: 0 auto; padding: 3rem 1.25rem 4rem; }
+  h1 { font-size: 1.6rem; margin: 0 0 .5rem; font-weight: 700; }
+  h2 { font-size: 1rem; margin: 3rem 0 1rem; text-transform: uppercase; letter-spacing: .08em; }
+  a { color: var(--accent); }
+  .dim { color: var(--dim); }
+  .term {
+    background: var(--code-bg); border: 1px solid var(--line); border-radius: 6px;
+    padding: .9rem 1.1rem; margin: 1.25rem 0; overflow-x: auto; white-space: pre;
+  }
+  table { border-collapse: collapse; width: 100%; }
+  td { padding: .3rem .6rem .3rem 0; vertical-align: top; }
+  td.num { color: var(--dim); width: 2.5rem; }
+  td.lvl { color: var(--dim); text-align: right; white-space: nowrap; }
+  .feature { margin: 1.4rem 0; }
+  .feature b { display: block; }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 3rem 0; }
+  footer { color: var(--dim); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Postgres Book, one topic at a time.</h1>
+  <p>No 1,000-page manual. Pick a topic, understand how it works, try the examples yourself.</p>
+  <div class="term">$ pgbook read locks</div>
+  <p class="dim">Free and open source · No signup required</p>
+
+  <h2>Table of contents</h2>
+  <table>
+    <tr><td class="num">01</td><td><a href="/api/topics/indexes">Indexes</a> <span class="dim">— why some queries are instant</span></td><td class="lvl">beginner</td></tr>
+    <tr><td class="num">02</td><td><a href="/api/topics/transactions">Transactions &amp; isolation</a> <span class="dim">— what one query can see of another</span></td><td class="lvl">intermediate</td></tr>
+    <tr><td class="num">03</td><td><a href="/api/topics/jsonb">JSON &amp; JSONB</a> <span class="dim">— semi-structured data, indexed</span></td><td class="lvl">intermediate</td></tr>
+    <tr><td class="num">04</td><td><a href="/api/topics/window-functions">Window functions</a> <span class="dim">— running totals without collapsing rows</span></td><td class="lvl">intermediate</td></tr>
+    <tr><td class="num">05</td><td><a href="/api/topics/row-level-security">Row-level security</a> <span class="dim">— access control inside the database</span></td><td class="lvl">intermediate</td></tr>
+    <tr><td class="num">06</td><td><a href="/api/topics/vacuum">Vacuum &amp; autovacuum</a> <span class="dim">— why deleted rows still take space</span></td><td class="lvl">intermediate</td></tr>
+    <tr><td class="num">07</td><td><a href="/api/topics/locks">Locks</a> <span class="dim">— why a query is stuck, not slow</span></td><td class="lvl">intermediate</td></tr>
+    <tr><td class="num">08</td><td><a href="/api/topics/replication">Replication</a> <span class="dim">— read replicas and failover</span></td><td class="lvl">advanced</td></tr>
+  </table>
+  <p class="dim">Eight topics so far, more in progress — MVCC, the query planner, EXPLAIN, connection pooling, partitioning. Every example runs against a real Postgres: copy it straight into your own database.</p>
+
+  <h2>Built to be read, not searched</h2>
+  <div class="feature"><b>Topic-first</b> No table of contents to hunt through. Each topic is a single, self-contained page.</div>
+  <div class="feature"><b>Runnable examples</b> Every example is real SQL you can paste into your own Postgres and run immediately.</div>
+  <div class="feature"><b>Free and open source</b> MIT licensed. No account, no paywall, no tracking.</div>
+
+  <h2>Read it from the terminal</h2>
+  <div class="term">$ pgbook list
+$ pgbook read locks
+$ pgbook search indexes
+$ pgbook next</div>
+
+  <h2>Install CLI</h2>
+  <div class="term">$ curl -fsSL https://pgbook.dev/install.sh | sh</div>
+  <p>Or with Homebrew:</p>
+  <div class="term">$ brew install pgrundev/tap/pgbook</div>
+  <p class="dim">macOS and Linux, arm64 and amd64. A single static binary — no signup, no Node, no Postgres required to read.</p>
+
+  <hr>
+  <footer>
+    MIT licensed · <a href="https://github.com/pgrundev/pgbook">Contributions welcome</a>
+  </footer>
+</main>
+</body>
+</html>

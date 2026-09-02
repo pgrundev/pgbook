@@ -1,0 +1,42 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+      - name: test
+        run: go test ./...
+        env:
+          CGO_ENABLED: "0"
+      - name: build
+        env:
+          CGO_ENABLED: "0"
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          mkdir -p dist
+          for target in darwin/arm64 darwin/amd64 linux/arm64 linux/amd64; do
+            os="${target%/*}" arch="${target#*/}"
+            GOOS="$os" GOARCH="$arch" \
+              go build -trimpath -ldflags "-s -w -X main.version=$version" -o dist/pgbook .
+            tar -C dist -czf "dist/pgbook_${version}_${os}_${arch}.tar.gz" pgbook
+            rm dist/pgbook
+          done
+          (cd dist && sha256sum *.tar.gz > checksums.txt)
+      - name: publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/*.tar.gz dist/checksums.txt \
+            --title "pgbook $GITHUB_REF_NAME" \
+            --generate-notes
