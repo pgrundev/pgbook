@@ -16,22 +16,22 @@ class Pgbook < Formula
   on_macos do
     on_arm do
       url "#{base}/pgbook_#{version}_darwin_arm64.tar.gz"
-      sha256 "REPLACE_WITH_DARWIN_ARM64_SHA256"
+      sha256 "9a4bcc74c2281baa778cbd09939a1ea4a3b352e50a987f001182115b750a2da4"
     end
     on_intel do
       url "#{base}/pgbook_#{version}_darwin_amd64.tar.gz"
-      sha256 "REPLACE_WITH_DARWIN_AMD64_SHA256"
+      sha256 "1a1c21b06e9cc8b867bbbd8cf3f7686a0bb68b60ec30d789cf799dd355630d77"
     end
   end
 
   on_linux do
     on_arm do
       url "#{base}/pgbook_#{version}_linux_arm64.tar.gz"
-      sha256 "REPLACE_WITH_LINUX_ARM64_SHA256"
+      sha256 "e7a0f80a7530347a37797196921fa2940dbd82c52d510e952f8ed77336835aa1"
     end
     on_intel do
       url "#{base}/pgbook_#{version}_linux_amd64.tar.gz"
-      sha256 "REPLACE_WITH_LINUX_AMD64_SHA256"
+      sha256 "f38b1971c7d670aa270fcdf1f9915d2662d0588876499d370799c95ed31987e5"
     end
   end
 
