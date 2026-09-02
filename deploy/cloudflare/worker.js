@@ -11,6 +11,9 @@ export default {
     if (path === "/api/topics" || path === "/api/topics/") {
       url.pathname = "/api/topics.json";
     }
+    if (path === "/install") {
+      url.pathname = "/install.sh";
+    }
 
     const resp = await env.ASSETS.fetch(new Request(url, request));
 
@@ -24,7 +27,7 @@ export default {
       r.headers.set("access-control-allow-origin", "*");
       return r;
     }
-    if (resp.ok && path === "/install.sh") {
+    if (resp.ok && (path === "/install.sh" || path === "/install")) {
       return withType("text/x-sh; charset=utf-8");
     }
     if (resp.ok && path.startsWith("/downloads/") && path.endsWith(".pdf")) {

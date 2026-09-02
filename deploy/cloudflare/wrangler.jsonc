@@ -15,6 +15,7 @@
   "routes": [
     { "pattern": "pgbook.dev/api/*", "zone_name": "pgbook.dev" },
     { "pattern": "pgbook.dev/install.sh", "zone_name": "pgbook.dev" },
+    { "pattern": "pgbook.dev/install", "zone_name": "pgbook.dev" },
     { "pattern": "pgbook.dev/downloads/*", "zone_name": "pgbook.dev" }
   ]
 }
