@@ -6,7 +6,7 @@
       "title": "Indexes",
       "description": "Why some queries are instant",
       "level": "beginner",
-      "reading_minutes": 8,
+      "reading_minutes": 15,
       "order": 1,
       "aliases": [
         "index",
@@ -16,7 +16,8 @@
       "tags": [
         "performance",
         "btree",
-        "explain"
+        "explain",
+        "tutorial"
       ]
     },
     {

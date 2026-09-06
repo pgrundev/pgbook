@@ -36,6 +36,17 @@ Topics are fetched from pgbook.dev and cached for offline reading.
 pgbook never connects to a database and never executes SQL.
 `
 
+// greeting follows the logo when pgbook is run with no arguments.
+const greeting = `
+  Start here   pgbook read indexes     Chapter 1 · hands-on · 15 min
+  All topics   pgbook list
+  Continue     pgbook next
+  Search       pgbook search <query>
+  Download     pgbook pdf
+
+  pgbook %s · pgbook --help for every command and flag
+`
+
 func run(args []string, stdout, stderr io.Writer) int {
 	baseURL := os.Getenv("PGBOOK_BASE_URL")
 	if baseURL == "" {
@@ -48,7 +59,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 	}
 
 	if len(args) == 0 {
-		fmt.Fprint(stdout, usage)
+		fmt.Fprint(stdout, render.Banner(app.Color))
+		fmt.Fprintf(stdout, greeting, version)
 		return 0
 	}
 	cmd, rest := args[0], args[1:]

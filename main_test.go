@@ -76,3 +76,23 @@ func TestAPIErrorIsReportedNotPanic(t *testing.T) {
 		t.Error("no error message on stderr")
 	}
 }
+
+func TestNoArgsShowsGreeting(t *testing.T) {
+	code, out, _ := runCLI(t)
+	if code != 0 {
+		t.Fatalf("no args: exit %d, want 0", code)
+	}
+	for _, want := range []string{"pgbook.dev", "pgbook read indexes", "pgbook list", "pgbook --help", version} {
+		if !strings.Contains(out, want) {
+			t.Errorf("greeting missing %q:\n%s", want, out)
+		}
+	}
+	if strings.Contains(out, "\x1b[") {
+		t.Errorf("greeting to a non-terminal contains ANSI escapes:\n%s", out)
+	}
+	for _, line := range strings.Split(out, "\n") {
+		if n := len([]rune(line)); n > 80 {
+			t.Errorf("greeting line is %d columns, want <= 80: %q", n, line)
+		}
+	}
+}
