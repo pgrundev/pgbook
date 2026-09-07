@@ -37,7 +37,7 @@ go install github.com/pgrundev/pgbook@latest
 | 01 | Tables and data types | _in progress_ |
 | 02 | SELECT, INSERT, UPDATE, DELETE | _in progress_ |
 | 03 | Joins | _in progress_ |
-| 04 | **Index basics** — why some queries are instant | ✅ `pgbook read indexes` |
+| 04 | **Index basics** — why some queries are instant (hands-on tutorial, five steps) | ✅ `pgbook read indexes` |
 | 05 | **Transactions** — grouping statements safely | _in progress_ |
 | 06 | Reading EXPLAIN | _in progress_ |
 
