@@ -8,7 +8,7 @@
 class Pgbook < Formula
   desc "Postgres Book in your terminal — one topic at a time"
   homepage "https://pgbook.dev"
-  version "0.1.0"
+  version "0.2.0"
   license "MIT"
 
   base = "https://github.com/pgrundev/pgbook/releases/download/v#{version}"
@@ -16,22 +16,22 @@ class Pgbook < Formula
   on_macos do
     on_arm do
       url "#{base}/pgbook_#{version}_darwin_arm64.tar.gz"
-      sha256 "9a4bcc74c2281baa778cbd09939a1ea4a3b352e50a987f001182115b750a2da4"
+      sha256 "8e3fd30f6130a6ec303c115de763e9a49d52d183a359a857f3ad9ae8c5335c2b"
     end
     on_intel do
       url "#{base}/pgbook_#{version}_darwin_amd64.tar.gz"
-      sha256 "1a1c21b06e9cc8b867bbbd8cf3f7686a0bb68b60ec30d789cf799dd355630d77"
+      sha256 "866180949b855f628db5b12cb86e3e678df1c5a9c7f05586429c81df02415c9c"
     end
   end
 
   on_linux do
     on_arm do
       url "#{base}/pgbook_#{version}_linux_arm64.tar.gz"
-      sha256 "e7a0f80a7530347a37797196921fa2940dbd82c52d510e952f8ed77336835aa1"
+      sha256 "ae9297f8b13e427c3e03506c0314b369850a32e78585dd947311d03bdf8a234d"
     end
     on_intel do
       url "#{base}/pgbook_#{version}_linux_amd64.tar.gz"
-      sha256 "f38b1971c7d670aa270fcdf1f9915d2662d0588876499d370799c95ed31987e5"
+      sha256 "1ef8f0f87b963dadd40ef0b6aee20310fa86962449802118f10127a3dd9ce570"
     end
   end
 
